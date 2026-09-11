@@ -78,3 +78,31 @@ def test_tts_provider_failure_returns_503(mock_gen):
         "/api/tts", json={"text": "Hello", "language": "en", "voice": "en-us"}
     )
     assert r.status_code == 503
+
+
+@patch("app.routers.tts.generate_speech", side_effect=["a.mp3", "b.mp3"])
+def test_tts_batch_success(mock_gen):
+    r = client.post(
+        "/api/tts/batch",
+        json={"texts": ["First line", "Second line"], "language": "en", "voice": "en-us"},
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["success"] is True
+    assert [x["audio_url"] for x in body["results"]] == ["/audio/a.mp3", "/audio/b.mp3"]
+
+
+def test_tts_batch_empty_rejected():
+    r = client.post(
+        "/api/tts/batch",
+        json={"texts": ["  ", ""], "language": "en", "voice": "en-us"},
+    )
+    assert r.status_code == 400
+
+
+def test_tts_batch_bad_voice_rejected():
+    r = client.post(
+        "/api/tts/batch",
+        json={"texts": ["hi"], "language": "hi", "voice": "en-us"},
+    )
+    assert r.status_code == 400

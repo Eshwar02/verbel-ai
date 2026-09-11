@@ -5,7 +5,14 @@ from fastapi import APIRouter, HTTPException, Request
 
 from app.config import settings
 from app.middleware.rate_limit import limiter
-from app.schemas.tts import HealthResponse, TTSRequest, TTSResponse
+from app.schemas.tts import (
+    BatchItemResult,
+    BatchRequest,
+    BatchResponse,
+    HealthResponse,
+    TTSRequest,
+    TTSResponse,
+)
 from app.services import voices as voice_catalog
 from app.services.tts_service import TTSGenerationError, generate_speech
 
@@ -55,3 +62,54 @@ def create_tts(request: Request, payload: TTSRequest) -> TTSResponse:
         ) from exc
 
     return TTSResponse(success=True, audio_url=f"/audio/{filename}")
+
+
+MAX_BATCH_ITEMS = 20
+
+
+@router.post("/tts/batch", response_model=BatchResponse)
+@limiter.limit("5/minute")
+def create_tts_batch(request: Request, payload: BatchRequest) -> BatchResponse:
+    # Validate language + voice once for the whole batch.
+    if voice_catalog.get_language(payload.language) is None:
+        raise HTTPException(
+            status_code=400, detail=f"Unsupported language: {payload.language!r}."
+        )
+    voice = voice_catalog.resolve_voice(payload.language, payload.voice)
+    if voice is None:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Voice {payload.voice!r} is not valid for language {payload.language!r}.",
+        )
+
+    segments = [t.strip() for t in payload.texts if t.strip()]
+    if not segments:
+        raise HTTPException(status_code=400, detail="No non-empty text segments.")
+    if len(segments) > MAX_BATCH_ITEMS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Too many segments (max {MAX_BATCH_ITEMS}).",
+        )
+
+    results: list[BatchItemResult] = []
+    for segment in segments:
+        if len(segment) > settings.max_text_length:
+            results.append(
+                BatchItemResult(
+                    text=segment, success=False, error="Segment exceeds max length."
+                )
+            )
+            continue
+        try:
+            filename = generate_speech(segment, payload.language, voice)
+            results.append(
+                BatchItemResult(
+                    text=segment, success=True, audio_url=f"/audio/{filename}"
+                )
+            )
+        except TTSGenerationError as exc:
+            results.append(
+                BatchItemResult(text=segment, success=False, error=str(exc))
+            )
+
+    return BatchResponse(success=True, results=results)

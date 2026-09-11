@@ -15,6 +15,24 @@ class TTSResponse(BaseModel):
     audio_url: str
 
 
+class BatchRequest(BaseModel):
+    texts: list[str] = Field(..., description="One or more text segments")
+    language: str
+    voice: str
+
+
+class BatchItemResult(BaseModel):
+    text: str
+    success: bool
+    audio_url: str | None = None
+    error: str | None = None
+
+
+class BatchResponse(BaseModel):
+    success: bool = True
+    results: list[BatchItemResult]
+
+
 class HealthResponse(BaseModel):
     status: str = "ok"
 

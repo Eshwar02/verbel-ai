@@ -13,6 +13,7 @@ from gtts import gTTS
 from gtts.tts import gTTSError
 
 from app.config import settings
+from app.services.text_utils import apply_pauses
 from app.services.voices import Voice
 
 
@@ -28,8 +29,9 @@ def generate_speech(text: str, language_code: str, voice: Voice) -> str:
     """
     filename = f"{uuid.uuid4().hex}.mp3"
     out_path: Path = settings.audio_dir / filename
+    spoken = apply_pauses(text)
     try:
-        tts = gTTS(text=text, lang=language_code, tld=voice.tld, slow=voice.slow)
+        tts = gTTS(text=spoken, lang=language_code, tld=voice.tld, slow=voice.slow)
         tts.save(str(out_path))
     except (gTTSError, AssertionError, ValueError) as exc:
         raise TTSGenerationError(str(exc)) from exc
