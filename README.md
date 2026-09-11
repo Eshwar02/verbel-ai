@@ -21,7 +21,7 @@ A full-stack Text-to-Speech web app — FastAPI backend, React + Tailwind fronte
 - **Health check** endpoint
 
 ### Power features
-- 🤖 **AI text enhancement** (Claude) — summarize, fix grammar, rewrite clearer, or make conversational before speaking
+- 🤖 **AI text enhancement** (Mistral) — summarize, fix grammar, rewrite clearer, or make conversational before speaking
 - 📄 **Document upload** — extract text from **PDF / DOCX / TXT** and drop it straight into the editor
 - 🔐 **Accounts + cloud history** — optional Supabase auth with per-user, RLS-protected generation history (falls back to local history when signed out)
 - 🚦 **Rate limiting** — per-IP throttling on generation (slowapi)
@@ -108,7 +108,7 @@ Frontend runs at **http://localhost:5173**.
 | `POST`   | `/api/tts`           | Generate speech from text (rate-limited)      |
 | `GET`    | `/api/voices`        | List supported languages and voices           |
 | `GET`    | `/api/health`        | Health check                                  |
-| `POST`   | `/api/enhance`       | AI text enhancement (Claude)                  |
+| `POST`   | `/api/enhance`       | AI text enhancement (Mistral)                 |
 | `POST`   | `/api/extract`       | Extract text from an uploaded PDF/DOCX/TXT    |
 | `POST`   | `/api/auth/signup`   | Create an account (Supabase)                  |
 | `POST`   | `/api/auth/login`    | Sign in (Supabase)                            |
@@ -170,7 +170,7 @@ These features degrade gracefully — the app runs without them, returning `503`
 
 | Feature            | Env vars (backend `.env`)                              |
 | ------------------ | ------------------------------------------------------ |
-| AI enhancement     | `ANTHROPIC_API_KEY`                                    |
+| AI enhancement     | `MISTRAL_API_KEY`                                      |
 | Auth + cloud history | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_ANON_KEY` |
 
 **Supabase schema:** apply `backend/db/migrations/0001_history.sql` (creates `speech_history` with Row Level Security so each user only sees their own rows).

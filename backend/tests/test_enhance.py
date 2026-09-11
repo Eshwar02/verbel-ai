@@ -1,6 +1,6 @@
 """API tests for the AI text-enhancement endpoint.
 
-External Claude calls are mocked — no real API calls are made.
+External Mistral calls are mocked — no real API calls are made.
 """
 from __future__ import annotations
 

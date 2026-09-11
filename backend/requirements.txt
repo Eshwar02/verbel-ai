@@ -7,8 +7,7 @@ python-multipart>=0.0.9
 # document extraction (POST /api/extract)
 pypdf>=4.0
 python-docx>=1.1
-# AI text enhancement (POST /api/enhance)
-anthropic>=0.40.0
+# AI text enhancement (POST /api/enhance) — Mistral via REST (uses httpx)
 # rate limiting
 slowapi>=0.1.9
 # Supabase auth + cloud history
