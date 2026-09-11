@@ -25,6 +25,11 @@ A full-stack Text-to-Speech web app — FastAPI backend, React + Tailwind fronte
 - 📄 **Document upload** — extract text from **PDF / DOCX / TXT** and drop it straight into the editor
 - 🔐 **Accounts + cloud history** — optional Supabase auth with per-user, RLS-protected generation history (falls back to local history when signed out)
 - 🚦 **Rate limiting** — per-IP throttling on generation (slowapi)
+- 🔎 **History search + tagging** — filter past generations and label them
+- 🧵 **Batch generation** — one clip per line in a single request
+- ⏸️ **Pause markers** — `[pause]` / `[pause=3]` for natural breaks
+- 🔗 **Share** — copy a link to any generated clip
+- 📲 **Installable PWA** — offline app shell, add to home screen
 
 ### SaaS-grade touches
 - 🌗 **Dark / light theme** with system-preference detection (persisted)
@@ -177,8 +182,10 @@ These features degrade gracefully — the app runs without them, returning `503`
 
 ## 🚢 Deployment & CI
 
+Full step-by-step runbook: **[DEPLOYMENT.md](./DEPLOYMENT.md)**.
+
 - **Backend:** `render.yaml` blueprint (or `backend/Dockerfile`) — runs `uvicorn app.main:app`.
-- **Frontend:** `frontend/vercel.json` for Vercel (set `VITE_API_BASE` to the backend URL), or `frontend/Dockerfile`.
+- **Frontend:** `frontend/vercel.json` for Vercel (set `VITE_API_BASE` to the backend URL), or `frontend/Dockerfile`. Ships as an **installable PWA** with offline caching.
 - **CI:** `.github/workflows/ci.yml` runs backend `pytest` and a frontend `npm run build` on every push/PR to `main`.
 
 ## 🗺️ Roadmap
