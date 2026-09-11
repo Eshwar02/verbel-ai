@@ -17,6 +17,8 @@ import {
   loadHistory,
   addHistory,
   clearHistory,
+  setHistoryTags,
+  removeHistory,
   loadFavorites,
   toggleFavorite,
 } from "./lib/storage.js";
@@ -25,6 +27,7 @@ import {
   listHistory as cloudList,
   saveHistory as cloudSave,
   deleteHistory as cloudDelete,
+  setTags as cloudSetTags,
 } from "./lib/cloudHistory.js";
 
 /** Normalize a cloud (snake_case) record into the local history shape. */
@@ -36,6 +39,7 @@ function fromCloud(r) {
     voiceLabel: r.voice,
     url: absoluteUrl(r.audio_url),
     name: "speech.mp3",
+    tags: r.tags ?? [],
   };
 }
 
@@ -136,6 +140,7 @@ export default function App() {
         voice,
         url,
         name,
+        tags: [],
       };
       if (user) {
         try {
@@ -203,6 +208,33 @@ export default function App() {
     setToast({ type: "success", message: "Logged out." });
   };
 
+  const handleSetTags = async (id, tags) => {
+    // optimistic update either way
+    setHistory((h) => h.map((it) => (it.id === id ? { ...it, tags } : it)));
+    if (user) {
+      try {
+        await cloudSetTags(id, tags);
+      } catch (e) {
+        setToast({ type: "error", message: e.message });
+      }
+    } else {
+      setHistoryTags(id, tags);
+    }
+  };
+
+  const handleDeleteHistory = async (id) => {
+    if (user) {
+      try {
+        await cloudDelete(id);
+        setHistory((h) => h.filter((it) => it.id !== id));
+      } catch (e) {
+        setToast({ type: "error", message: e.message });
+      }
+    } else {
+      setHistory(removeHistory(id));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-brand-50 via-slate-50 to-slate-50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
@@ -262,6 +294,8 @@ export default function App() {
               items={history}
               onReplay={handleReplay}
               onClear={handleClearHistory}
+              onSetTags={handleSetTags}
+              onDelete={handleDeleteHistory}
             />
           </div>
         </div>

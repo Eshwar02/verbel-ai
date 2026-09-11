@@ -52,6 +52,18 @@ export async function listHistory() {
   return body.records ?? [];
 }
 
+/** Replace the tags on one history record. */
+export async function setTags(id, tags) {
+  const res = await fetch(`${API_BASE}/api/history/${id}/tags`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify({ tags }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  const body = await res.json();
+  return body.record;
+}
+
 /** Delete one history record by id. */
 export async function deleteHistory(id) {
   const res = await fetch(`${API_BASE}/api/history/${id}`, {

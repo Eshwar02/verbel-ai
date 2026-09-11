@@ -39,6 +39,22 @@ export function clearHistory() {
   return [];
 }
 
+/** Replace the tag list on one local history entry. */
+export function setHistoryTags(id, tags) {
+  const history = loadHistory().map((h) =>
+    h.id === id ? { ...h, tags } : h
+  );
+  write(HISTORY_KEY, history);
+  return history;
+}
+
+/** Remove one local history entry by id. */
+export function removeHistory(id) {
+  const history = loadHistory().filter((h) => h.id !== id);
+  write(HISTORY_KEY, history);
+  return history;
+}
+
 // --- Favorite voices ---
 export function loadFavorites() {
   return read(FAVORITES_KEY, []);
