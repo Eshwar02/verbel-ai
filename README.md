@@ -20,6 +20,12 @@ A full-stack Text-to-Speech web app — FastAPI backend, React + Tailwind fronte
 - **Server-side validation** and graceful error handling
 - **Health check** endpoint
 
+### Power features
+- 🤖 **AI text enhancement** (Claude) — summarize, fix grammar, rewrite clearer, or make conversational before speaking
+- 📄 **Document upload** — extract text from **PDF / DOCX / TXT** and drop it straight into the editor
+- 🔐 **Accounts + cloud history** — optional Supabase auth with per-user, RLS-protected generation history (falls back to local history when signed out)
+- 🚦 **Rate limiting** — per-IP throttling on generation (slowapi)
+
 ### SaaS-grade touches
 - 🌗 **Dark / light theme** with system-preference detection (persisted)
 - 📊 **Live stats** — character count, word count, estimated read time, and a max-length progress bar
@@ -97,11 +103,18 @@ Frontend runs at **http://localhost:5173**.
 
 ## 🔌 API
 
-| Method | Endpoint       | Description                          |
-| ------ | -------------- | ------------------------------------ |
-| `POST` | `/api/tts`     | Generate speech from text            |
-| `GET`  | `/api/voices`  | List supported languages and voices  |
-| `GET`  | `/api/health`  | Health check                         |
+| Method   | Endpoint             | Description                                   |
+| -------- | -------------------- | --------------------------------------------- |
+| `POST`   | `/api/tts`           | Generate speech from text (rate-limited)      |
+| `GET`    | `/api/voices`        | List supported languages and voices           |
+| `GET`    | `/api/health`        | Health check                                  |
+| `POST`   | `/api/enhance`       | AI text enhancement (Claude)                  |
+| `POST`   | `/api/extract`       | Extract text from an uploaded PDF/DOCX/TXT    |
+| `POST`   | `/api/auth/signup`   | Create an account (Supabase)                  |
+| `POST`   | `/api/auth/login`    | Sign in (Supabase)                            |
+| `GET`    | `/api/history`       | List the signed-in user's history            |
+| `POST`   | `/api/history`       | Save a generation to cloud history            |
+| `DELETE` | `/api/history/{id}`  | Delete a history record                       |
 
 **`POST /api/tts`**
 
@@ -151,11 +164,27 @@ frontend stay unchanged.
 
 ---
 
+## ⚙️ Optional integrations
+
+These features degrade gracefully — the app runs without them, returning `503` if called while unconfigured.
+
+| Feature            | Env vars (backend `.env`)                              |
+| ------------------ | ------------------------------------------------------ |
+| AI enhancement     | `ANTHROPIC_API_KEY`                                    |
+| Auth + cloud history | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_ANON_KEY` |
+
+**Supabase schema:** apply `backend/db/migrations/0001_history.sql` (creates `speech_history` with Row Level Security so each user only sees their own rows).
+
+## 🚢 Deployment & CI
+
+- **Backend:** `render.yaml` blueprint (or `backend/Dockerfile`) — runs `uvicorn app.main:app`.
+- **Frontend:** `frontend/vercel.json` for Vercel (set `VITE_API_BASE` to the backend URL), or `frontend/Dockerfile`.
+- **CI:** `.github/workflows/ci.yml` runs backend `pytest` and a frontend `npm run build` on every push/PR to `main`.
+
 ## 🗺️ Roadmap
-- User accounts + cloud-synced history (Supabase — MCP already wired)
-- PDF / DOCX upload with text extraction
-- AI text enhancement (summarize, grammar, rewrite)
-- Rate limiting and deployment (Vercel + Render/Railway)
+- Favorites/voice cloud sync
+- Speech-history search + tagging
+- Deploy live demo
 
 ---
 
