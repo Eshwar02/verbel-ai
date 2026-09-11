@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     # Supabase (auth + cloud history); backend-only service key
     supabase_url: str | None = None
     supabase_service_key: str | None = None
+    supabase_anon_key: str | None = None
     supabase_jwt_secret: str | None = None
 
     @property
