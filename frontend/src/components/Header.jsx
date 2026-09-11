@@ -1,6 +1,6 @@
-import { AudioLines, Moon, Sun, Github } from "lucide-react";
+import { AudioLines, Moon, Sun, Github, LogIn, LogOut, User } from "lucide-react";
 
-export default function Header({ theme, onToggleTheme }) {
+export default function Header({ theme, onToggleTheme, user, onLogin, onLogout }) {
   return (
     <header className="mb-8 flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -16,6 +16,23 @@ export default function Header({ theme, onToggleTheme }) {
       </div>
 
       <div className="flex items-center gap-2">
+        {user ? (
+          <div className="flex items-center gap-2">
+            <span className="chip max-w-[10rem] truncate" title={user.email}>
+              <User className="h-3.5 w-3.5" />
+              {user.email}
+            </span>
+            <button onClick={onLogout} className="btn-ghost" aria-label="Log out">
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Log out</span>
+            </button>
+          </div>
+        ) : (
+          <button onClick={onLogin} className="btn-ghost" aria-label="Log in">
+            <LogIn className="h-4 w-4" />
+            <span className="hidden sm:inline">Log in</span>
+          </button>
+        )}
         <a
           href="https://github.com/Eshwar02/verbel-ai"
           target="_blank"
