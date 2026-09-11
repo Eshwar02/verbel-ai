@@ -1,0 +1,28 @@
+# Render blueprint for the verbel-ai backend.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Env vars are declared with `sync: false`, so Render will NOT read them from
+# this file -- set each value in the Render dashboard (or via `render env`).
+services:
+  - type: web
+    name: verbel-ai-backend
+    runtime: python
+    plan: free
+    # Run inside backend/ so `pip install -r requirements.txt` and the
+    # `app.main:app` import path both resolve.
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: MAX_TEXT_LENGTH
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
