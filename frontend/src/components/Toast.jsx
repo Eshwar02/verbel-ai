@@ -14,7 +14,11 @@ export default function Toast({ toast, onClose }) {
   const error = toast.type === "error";
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 animate-slide-in">
+    <div
+      className="fixed bottom-6 right-6 z-50 animate-slide-in"
+      role="alert"
+      aria-live="assertive"
+    >
       <div
         className={`flex max-w-sm items-start gap-3 rounded-xl border p-4 shadow-xl backdrop-blur ${
           error

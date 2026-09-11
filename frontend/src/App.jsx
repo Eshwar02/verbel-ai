@@ -277,7 +277,7 @@ export default function App() {
           onLogout={handleLogout}
         />
 
-        <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+        <main className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
           <div className="space-y-6">
             <TextInput value={text} onChange={setText} maxLength={MAX_LENGTH} />
 
@@ -294,20 +294,27 @@ export default function App() {
             </div>
 
             <div className="card p-5">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <LanguageSelector
-                  languages={languages}
-                  value={language}
-                  onChange={onLanguageChange}
-                />
-                <VoiceSelector
-                  voices={voices}
-                  value={voice}
-                  onChange={setVoice}
-                  favorites={favorites}
-                  onToggleFavorite={handleToggleFavorite}
-                />
-              </div>
+              {languages.length === 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2" aria-hidden="true">
+                  <div className="h-16 animate-pulse rounded-xl bg-slate-200/70 dark:bg-slate-800" />
+                  <div className="h-16 animate-pulse rounded-xl bg-slate-200/70 dark:bg-slate-800" />
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <LanguageSelector
+                    languages={languages}
+                    value={language}
+                    onChange={onLanguageChange}
+                  />
+                  <VoiceSelector
+                    voices={voices}
+                    value={voice}
+                    onChange={setVoice}
+                    favorites={favorites}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                </div>
+              )}
               <div className="mt-4 space-y-2">
                 <GenerateButton
                   onClick={handleGenerate}
@@ -362,7 +369,7 @@ export default function App() {
               onDelete={handleDeleteHistory}
             />
           </div>
-        </div>
+        </main>
 
         <footer className="mt-10 text-center text-xs text-slate-400">
           verbel-ai · text-to-speech · built with FastAPI + React

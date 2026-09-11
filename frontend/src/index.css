@@ -43,6 +43,23 @@
   }
 }
 
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Visible focus ring for keyboard users */
+:focus-visible {
+  outline: 2px solid theme("colors.brand.500");
+  outline-offset: 2px;
+}
+
 /* Range slider styling */
 input[type="range"] {
   @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 dark:bg-slate-700;
