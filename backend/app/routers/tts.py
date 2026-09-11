@@ -1,9 +1,10 @@
 """TTS API routes: POST /api/tts, GET /api/voices, GET /api/health."""
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 
 from app.config import settings
+from app.middleware.rate_limit import limiter
 from app.schemas.tts import HealthResponse, TTSRequest, TTSResponse
 from app.services import voices as voice_catalog
 from app.services.tts_service import TTSGenerationError, generate_speech
@@ -22,7 +23,8 @@ def list_voices() -> dict:
 
 
 @router.post("/tts", response_model=TTSResponse)
-def create_tts(payload: TTSRequest) -> TTSResponse:
+@limiter.limit("20/minute")
+def create_tts(request: Request, payload: TTSRequest) -> TTSResponse:
     text = payload.text.strip()
 
     # --- validation (spec §14) ---

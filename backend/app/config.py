@@ -20,6 +20,14 @@ class Settings(BaseSettings):
     # CORS: comma-separated origins allowed to call the API
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
+    # AI text enhancement (POST /api/enhance)
+    anthropic_api_key: str | None = None
+
+    # Supabase (auth + cloud history); backend-only service key
+    supabase_url: str | None = None
+    supabase_service_key: str | None = None
+    supabase_jwt_secret: str | None = None
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
