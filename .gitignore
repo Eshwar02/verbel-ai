@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+
+# Env / secrets
+.env
+backend/.env
+
+# Generated audio (temporary)
+backend/app/generated_audio/*
+!backend/app/generated_audio/.gitkeep
+
+# Node / frontend
+node_modules/
+dist/
+.vite/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.log
