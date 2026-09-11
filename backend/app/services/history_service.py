@@ -22,6 +22,7 @@ def create_record(user_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         "language": payload["language"],
         "voice": payload["voice"],
         "audio_url": payload["audio_url"],
+        "tags": payload.get("tags") or [],
     }
     client = get_client()
     result = client.table(_TABLE).insert(row).execute()
@@ -29,6 +30,20 @@ def create_record(user_id: str, payload: dict[str, Any]) -> dict[str, Any]:
     if not data:
         raise RuntimeError("Failed to save history record.")
     return data[0]
+
+
+def update_tags(user_id: str, record_id: str, tags: list[str]) -> dict[str, Any] | None:
+    """Replace the tags on a record the user owns. Returns the row or None."""
+    client = get_client()
+    result = (
+        client.table(_TABLE)
+        .update({"tags": tags})
+        .eq("id", record_id)
+        .eq("user_id", user_id)
+        .execute()
+    )
+    data = getattr(result, "data", None) or []
+    return data[0] if data else None
 
 
 def list_records(user_id: str) -> list[dict[str, Any]]:

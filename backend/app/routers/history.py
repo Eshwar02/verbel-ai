@@ -16,6 +16,7 @@ from app.schemas.history import (
     HistoryCreateResponse,
     HistoryListResponse,
     HistoryRecord,
+    HistoryTagsUpdate,
 )
 from app.services import history_service
 from app.services.supabase_client import SupabaseUnavailable, verify_token
@@ -58,6 +59,23 @@ def list_history(user_id: str = Depends(current_user_id)) -> HistoryListResponse
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Could not list: {exc}") from exc
     return HistoryListResponse(records=[HistoryRecord(**r) for r in rows])
+
+
+@router.patch("/history/{record_id}/tags", response_model=HistoryCreateResponse)
+def update_history_tags(
+    record_id: str,
+    payload: HistoryTagsUpdate,
+    user_id: str = Depends(current_user_id),
+) -> HistoryCreateResponse:
+    try:
+        row = history_service.update_tags(user_id, record_id, payload.tags)
+    except SupabaseUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Could not update: {exc}") from exc
+    if row is None:
+        raise HTTPException(status_code=404, detail="Record not found.")
+    return HistoryCreateResponse(record=HistoryRecord(**row))
 
 
 @router.delete("/history/{record_id}")

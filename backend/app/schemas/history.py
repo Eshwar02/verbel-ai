@@ -13,6 +13,7 @@ class HistoryCreate(BaseModel):
     language: str = Field(..., description="Language code, e.g. 'en'")
     voice: str = Field(..., description="Voice id used for the generation")
     audio_url: str = Field(..., description="URL/path of the generated audio")
+    tags: list[str] = Field(default_factory=list, description="Optional labels")
 
 
 class HistoryRecord(BaseModel):
@@ -23,7 +24,12 @@ class HistoryRecord(BaseModel):
     language: str
     voice: str
     audio_url: str
+    tags: list[str] = Field(default_factory=list)
     created_at: datetime
+
+
+class HistoryTagsUpdate(BaseModel):
+    tags: list[str] = Field(default_factory=list)
 
 
 class HistoryListResponse(BaseModel):
