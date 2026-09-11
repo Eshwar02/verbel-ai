@@ -10,7 +10,7 @@ import EnhanceMenu from "./components/EnhanceMenu.jsx";
 import History from "./components/History.jsx";
 import Toast from "./components/Toast.jsx";
 import AuthModal from "./components/AuthModal.jsx";
-import { fetchVoices, generateSpeech, absoluteUrl } from "./api/client.js";
+import { fetchVoices, generateSpeech, generateBatch, absoluteUrl } from "./api/client.js";
 import {
   loadTheme,
   saveTheme,
@@ -53,6 +53,8 @@ export default function App() {
   const [voice, setVoice] = useState("");
   const [loading, setLoading] = useState(false);
   const [audio, setAudio] = useState(null); // { url, name }
+  const [batch, setBatch] = useState(null); // [{ text, url } | { text, error }]
+  const [batchLoading, setBatchLoading] = useState(false);
   const [history, setHistory] = useState(loadHistory);
   const [favorites, setFavorites] = useState(loadFavorites);
   const [toast, setToast] = useState(null);
@@ -164,6 +166,35 @@ export default function App() {
       setLoading(false);
     }
   }, [text, language, voice, currentLang, currentVoice, user, refreshHistory]);
+
+  const handleGenerateBatch = async () => {
+    const texts = text
+      .split(/\n+/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (texts.length < 2) {
+      return setToast({
+        type: "error",
+        message: "Add at least two lines to batch-generate (one clip per line).",
+      });
+    }
+    setBatchLoading(true);
+    try {
+      const res = await generateBatch({ texts, language, voice });
+      setBatch(
+        res.results.map((r) => ({
+          text: r.text,
+          url: r.audio_url ? absoluteUrl(r.audio_url) : null,
+          error: r.error,
+        }))
+      );
+      setToast({ type: "success", message: `Generated ${res.results.length} clips.` });
+    } catch (e) {
+      setToast({ type: "error", message: e.message });
+    } finally {
+      setBatchLoading(false);
+    }
+  };
 
   // keyboard shortcut: Cmd/Ctrl + Enter
   useEffect(() => {
@@ -277,16 +308,49 @@ export default function App() {
                   onToggleFavorite={handleToggleFavorite}
                 />
               </div>
-              <div className="mt-4">
+              <div className="mt-4 space-y-2">
                 <GenerateButton
                   onClick={handleGenerate}
                   loading={loading}
                   disabled={!canGenerate}
                 />
+                <button
+                  onClick={handleGenerateBatch}
+                  disabled={batchLoading || !trimmed}
+                  className="btn-ghost w-full text-xs"
+                  title="Split the text by line and generate one clip per line"
+                >
+                  {batchLoading ? "Generating batch…" : "Batch generate (one clip per line)"}
+                </button>
               </div>
             </div>
 
             {audio && <AudioPlayer src={audio.url} downloadName={audio.name} />}
+
+            {batch && (
+              <div className="card animate-fade-in p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-sm font-semibold">Batch results ({batch.length})</h3>
+                  <button className="btn-ghost !px-2.5 !py-1.5 text-xs" onClick={() => setBatch(null)}>
+                    Dismiss
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  {batch.map((b, i) => (
+                    <div key={i}>
+                      <p className="mb-1 truncate text-xs text-slate-500 dark:text-slate-400">
+                        {i + 1}. {b.text}
+                      </p>
+                      {b.url ? (
+                        <AudioPlayer src={b.url} downloadName={`clip_${i + 1}.mp3`} />
+                      ) : (
+                        <p className="text-xs text-red-500">Failed: {b.error}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-6">

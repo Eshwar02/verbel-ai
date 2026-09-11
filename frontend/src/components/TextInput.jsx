@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Copy, Eraser, FileUp, Sparkles, Check } from "lucide-react";
+import { Copy, Eraser, FileUp, Sparkles, Check, Pause } from "lucide-react";
 
 const SAMPLE =
   "Hello! Welcome to verbel-ai. Paste any text here, pick a language and voice, then generate natural-sounding speech in seconds.";
@@ -10,6 +10,22 @@ export default function TextInput({ value, onChange, maxLength }) {
   const [copied, setCopied] = useState(false);
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  const insertPause = () => {
+    const el = textareaRef.current;
+    const marker = "[pause]";
+    if (!el) return onChange((value + " " + marker).slice(0, maxLength));
+    const start = el.selectionStart ?? value.length;
+    const end = el.selectionEnd ?? value.length;
+    const next = (value.slice(0, start) + marker + value.slice(end)).slice(0, maxLength);
+    onChange(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + marker.length;
+      el.setSelectionRange(pos, pos);
+    });
+  };
 
   const chars = value.length;
   const words = value.trim() ? value.trim().split(/\s+/).length : 0;
@@ -49,6 +65,13 @@ export default function TextInput({ value, onChange, maxLength }) {
           </button>
           <button
             className="btn-ghost !px-2.5 !py-1.5 text-xs"
+            onClick={insertPause}
+            title="Insert a pause marker — [pause] or [pause=3]"
+          >
+            <Pause className="h-3.5 w-3.5" /> Pause
+          </button>
+          <button
+            className="btn-ghost !px-2.5 !py-1.5 text-xs"
             onClick={() => fileRef.current?.click()}
           >
             <FileUp className="h-3.5 w-3.5" /> .txt
@@ -85,6 +108,7 @@ export default function TextInput({ value, onChange, maxLength }) {
         }`}
       >
         <textarea
+          ref={textareaRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={8}

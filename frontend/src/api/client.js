@@ -22,6 +22,21 @@ export async function fetchVoices() {
   return res.json();
 }
 
+export async function generateBatch({ texts, language, voice }) {
+  let res;
+  try {
+    res = await fetch(`${API_BASE}/api/tts/batch`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ texts, language, voice }),
+    });
+  } catch {
+    throw new Error("Network error — is the backend running?");
+  }
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
 export async function generateSpeech({ text, language, voice }) {
   let res;
   try {

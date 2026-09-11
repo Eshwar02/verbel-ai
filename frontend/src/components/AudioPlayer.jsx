@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Play, Pause, Volume2, Gauge, Download } from "lucide-react";
+import { Play, Pause, Volume2, Gauge, Download, Link2, Check } from "lucide-react";
 
 const RATES = [0.75, 1, 1.25, 1.5, 2];
 
@@ -17,6 +17,7 @@ export default function AudioPlayer({ src, downloadName }) {
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
   const [rate, setRate] = useState(1);
+  const [shared, setShared] = useState(false);
 
   useEffect(() => {
     // reset when a new clip arrives
@@ -48,6 +49,21 @@ export default function AudioPlayer({ src, downloadName }) {
     if (audioRef.current) audioRef.current.playbackRate = next;
   };
 
+  const share = async () => {
+    const absolute = new URL(src, window.location.origin).href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "verbel-ai audio", url: absolute });
+      } else {
+        await navigator.clipboard.writeText(absolute);
+        setShared(true);
+        setTimeout(() => setShared(false), 1500);
+      }
+    } catch {
+      /* user cancelled share sheet — ignore */
+    }
+  };
+
   const download = () => {
     const a = document.createElement("a");
     a.href = src;
@@ -61,9 +77,15 @@ export default function AudioPlayer({ src, downloadName }) {
     <div className="card animate-fade-in p-5">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold">Generated audio</h3>
-        <button className="btn-ghost !px-3 !py-1.5 text-xs" onClick={download}>
-          <Download className="h-3.5 w-3.5" /> Download
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button className="btn-ghost !px-3 !py-1.5 text-xs" onClick={share}>
+            {shared ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
+            {shared ? "Copied" : "Share"}
+          </button>
+          <button className="btn-ghost !px-3 !py-1.5 text-xs" onClick={download}>
+            <Download className="h-3.5 w-3.5" /> Download
+          </button>
+        </div>
       </div>
 
       <audio
