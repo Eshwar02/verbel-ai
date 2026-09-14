@@ -1,4 +1,5 @@
-import { Mic, Star } from "lucide-react";
+import { useRef, useState } from "react";
+import { Mic, Star, Play, Loader2 } from "lucide-react";
 
 export default function VoiceSelector({
   voices,
@@ -6,7 +7,12 @@ export default function VoiceSelector({
   onChange,
   favorites,
   onToggleFavorite,
+  onPreview,
+  onError,
 }) {
+  const audioRef = useRef(null);
+  const [previewing, setPreviewing] = useState(false);
+
   // Surface favorited voices first within the current language.
   const sorted = [...voices].sort((a, b) => {
     const fa = favorites.includes(a.id) ? 0 : 1;
@@ -15,6 +21,22 @@ export default function VoiceSelector({
   });
 
   const isFav = favorites.includes(value);
+
+  const preview = async () => {
+    if (!onPreview || !value) return;
+    setPreviewing(true);
+    try {
+      const url = await onPreview(value);
+      if (audioRef.current) {
+        audioRef.current.src = url;
+        await audioRef.current.play();
+      }
+    } catch (e) {
+      onError?.(e.message || "Could not preview this voice.");
+    } finally {
+      setPreviewing(false);
+    }
+  };
 
   return (
     <div>
@@ -35,6 +57,22 @@ export default function VoiceSelector({
             </option>
           ))}
         </select>
+        {onPreview && (
+          <button
+            type="button"
+            onClick={preview}
+            disabled={previewing || !value}
+            className="btn-ghost !px-2.5"
+            title="Preview this voice"
+            aria-label="Preview voice"
+          >
+            {previewing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+          </button>
+        )}
         <button
           type="button"
           onClick={() => onToggleFavorite(value)}
@@ -49,6 +87,7 @@ export default function VoiceSelector({
           />
         </button>
       </div>
+      <audio ref={audioRef} className="hidden" />
     </div>
   );
 }

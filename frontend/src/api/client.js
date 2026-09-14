@@ -37,13 +37,28 @@ export async function generateBatch({ texts, language, voice }) {
   return res.json();
 }
 
-export async function generateSpeech({ text, language, voice }) {
+export async function detectLanguage(text) {
+  let res;
+  try {
+    res = await fetch(`${API_BASE}/api/detect-language`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+  } catch {
+    throw new Error("Network error — is the backend running?");
+  }
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function generateSpeech({ text, language, voice, engine = "standard" }) {
   let res;
   try {
     res = await fetch(`${API_BASE}/api/tts`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, language, voice }),
+      body: JSON.stringify({ text, language, voice, engine }),
     });
   } catch {
     throw new Error("Network error — is the backend running?");

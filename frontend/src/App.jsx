@@ -3,6 +3,7 @@ import Header from "./components/Header.jsx";
 import TextInput from "./components/TextInput.jsx";
 import LanguageSelector from "./components/LanguageSelector.jsx";
 import VoiceSelector from "./components/VoiceSelector.jsx";
+import EngineSelector from "./components/EngineSelector.jsx";
 import GenerateButton from "./components/GenerateButton.jsx";
 import AudioPlayer from "./components/AudioPlayer.jsx";
 import DocumentUpload from "./components/DocumentUpload.jsx";
@@ -10,7 +11,13 @@ import EnhanceMenu from "./components/EnhanceMenu.jsx";
 import History from "./components/History.jsx";
 import Toast from "./components/Toast.jsx";
 import AuthModal from "./components/AuthModal.jsx";
-import { fetchVoices, generateSpeech, generateBatch, absoluteUrl } from "./api/client.js";
+import {
+  fetchVoices,
+  generateSpeech,
+  generateBatch,
+  detectLanguage,
+  absoluteUrl,
+} from "./api/client.js";
 import {
   loadTheme,
   saveTheme,
@@ -48,6 +55,9 @@ const MAX_LENGTH = 5000;
 export default function App() {
   const [theme, setTheme] = useState(loadTheme);
   const [languages, setLanguages] = useState([]);
+  const [neuralLanguages, setNeuralLanguages] = useState([]);
+  const [neuralAvailable, setNeuralAvailable] = useState(false);
+  const [engine, setEngine] = useState("standard"); // "standard" | "neural"
   const [text, setText] = useState("");
   const [language, setLanguage] = useState("");
   const [voice, setVoice] = useState("");
@@ -60,6 +70,7 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [user, setUser] = useState(getUser);
   const [authOpen, setAuthOpen] = useState(false);
+  const [detecting, setDetecting] = useState(false);
 
   // --- history source: cloud when logged in, else local ---
   const refreshHistory = useCallback(async (u) => {
@@ -90,6 +101,8 @@ export default function App() {
     fetchVoices()
       .then((data) => {
         setLanguages(data.languages);
+        setNeuralLanguages(data.neural?.languages ?? []);
+        setNeuralAvailable(!!data.neural?.available);
         const first = data.languages[0];
         if (first) {
           setLanguage(first.code);
@@ -99,9 +112,12 @@ export default function App() {
       .catch((e) => setToast({ type: "error", message: e.message }));
   }, []);
 
+  // The active catalog depends on the selected engine.
+  const activeLanguages = engine === "neural" ? neuralLanguages : languages;
+
   const currentLang = useMemo(
-    () => languages.find((l) => l.code === language),
-    [languages, language]
+    () => activeLanguages.find((l) => l.code === language),
+    [activeLanguages, language]
   );
   const voices = currentLang?.voices ?? [];
   const currentVoice = voices.find((v) => v.id === voice);
@@ -109,8 +125,20 @@ export default function App() {
   // keep voice valid when language changes
   const onLanguageChange = (code) => {
     setLanguage(code);
-    const lang = languages.find((l) => l.code === code);
+    const lang = activeLanguages.find((l) => l.code === code);
     setVoice(lang?.voices[0]?.id ?? "");
+  };
+
+  // Switch engines and reset to a valid language/voice in the new catalog.
+  const handleEngineChange = (next) => {
+    if (next === engine) return;
+    const catalog = next === "neural" ? neuralLanguages : languages;
+    setEngine(next);
+    const keep = catalog.find((l) => l.code === language) ?? catalog[0];
+    if (keep) {
+      setLanguage(keep.code);
+      setVoice(keep.voices[0]?.id ?? "");
+    }
   };
 
   const trimmed = text.trim();
@@ -128,8 +156,14 @@ export default function App() {
 
     setLoading(true);
     try {
-      const res = await generateSpeech({ text: t, language, voice });
+      const res = await generateSpeech({ text: t, language, voice, engine });
       const url = absoluteUrl(res.audio_url);
+      if (engine === "neural" && res.engine_used === "standard") {
+        setToast({
+          type: "error",
+          message: "Neural engine was busy — used the standard voice instead.",
+        });
+      }
       const name = `${t.slice(0, 24).replace(/\s+/g, "_") || "speech"}.mp3`;
       setAudio({ url, name });
 
@@ -165,7 +199,7 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, [text, language, voice, currentLang, currentVoice, user, refreshHistory]);
+  }, [text, language, voice, engine, currentLang, currentVoice, user, refreshHistory]);
 
   const handleGenerateBatch = async () => {
     const texts = text
@@ -207,6 +241,65 @@ export default function App() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [canGenerate, handleGenerate]);
+
+  // Auto-detect the language of the current text and select it + a voice.
+  const handleAutoDetect = async () => {
+    const t = text.trim();
+    if (t.length < 8) {
+      return setToast({
+        type: "error",
+        message: "Add a bit more text so the language can be detected.",
+      });
+    }
+    setDetecting(true);
+    try {
+      const res = await detectLanguage(t);
+      if (!res.supported) {
+        return setToast({
+          type: "error",
+          message: `Detected "${res.detected_code}", which isn't available yet.`,
+        });
+      }
+      // Detected language must exist in the *active* engine's catalog.
+      if (!activeLanguages.some((l) => l.code === res.language_code)) {
+        return setToast({
+          type: "error",
+          message: `Detected ${res.language_name}, not offered by the neural engine. Switch to Standard.`,
+        });
+      }
+      onLanguageChange(res.language_code);
+      // res.voice_id is a standard (gTTS) voice; only apply it in standard mode.
+      if (engine === "standard" && res.voice_id) setVoice(res.voice_id);
+      setToast({
+        type: "success",
+        message: `Detected ${res.language_name} (${Math.round(
+          res.confidence * 100
+        )}% sure).`,
+      });
+    } catch (e) {
+      setToast({ type: "error", message: e.message });
+    } finally {
+      setDetecting(false);
+    }
+  };
+
+  // Generate a short spoken sample of a voice so users can preview before use.
+  const handlePreviewVoice = useCallback(
+    async (voiceId) => {
+      const sample =
+        currentLang?.code === "en"
+          ? "Hi! This is how I sound."
+          : text.trim().slice(0, 60) || "Hello!";
+      const res = await generateSpeech({
+        text: sample,
+        language,
+        voice: voiceId,
+        engine,
+      });
+      return absoluteUrl(res.audio_url);
+    },
+    [currentLang, language, text, engine]
+  );
 
   const handleReplay = (item) => {
     setAudio({ url: item.url, name: item.name });
@@ -294,6 +387,9 @@ export default function App() {
             </div>
 
             <div className="card p-5">
+              {neuralAvailable && (
+                <EngineSelector value={engine} onChange={handleEngineChange} />
+              )}
               {languages.length === 0 ? (
                 <div className="grid gap-4 sm:grid-cols-2" aria-hidden="true">
                   <div className="h-16 animate-pulse rounded-xl bg-slate-200/70 dark:bg-slate-800" />
@@ -302,9 +398,12 @@ export default function App() {
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2">
                   <LanguageSelector
-                    languages={languages}
+                    languages={activeLanguages}
                     value={language}
                     onChange={onLanguageChange}
+                    onAutoDetect={handleAutoDetect}
+                    detecting={detecting}
+                    canDetect={trimmed.length >= 8}
                   />
                   <VoiceSelector
                     voices={voices}
@@ -312,6 +411,8 @@ export default function App() {
                     onChange={setVoice}
                     favorites={favorites}
                     onToggleFavorite={handleToggleFavorite}
+                    onPreview={handlePreviewVoice}
+                    onError={(m) => setToast({ type: "error", message: m })}
                   />
                 </div>
               )}
@@ -321,14 +422,16 @@ export default function App() {
                   loading={loading}
                   disabled={!canGenerate}
                 />
-                <button
-                  onClick={handleGenerateBatch}
-                  disabled={batchLoading || !trimmed}
-                  className="btn-ghost w-full text-xs"
-                  title="Split the text by line and generate one clip per line"
-                >
-                  {batchLoading ? "Generating batch…" : "Batch generate (one clip per line)"}
-                </button>
+                {engine === "standard" && (
+                  <button
+                    onClick={handleGenerateBatch}
+                    disabled={batchLoading || !trimmed}
+                    className="btn-ghost w-full text-xs"
+                    title="Split the text by line and generate one clip per line"
+                  >
+                    {batchLoading ? "Generating batch…" : "Batch generate (one clip per line)"}
+                  </button>
+                )}
               </div>
             </div>
 

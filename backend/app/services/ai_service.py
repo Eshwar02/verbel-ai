@@ -9,6 +9,7 @@ the router can map it to HTTP 503.
 from __future__ import annotations
 
 import os
+import time
 
 import httpx
 
@@ -19,6 +20,13 @@ MODEL = "mistral-small-latest"
 MAX_TOKENS = 2000
 API_URL = "https://api.mistral.ai/v1/chat/completions"
 TIMEOUT = 30.0
+
+# Transient failures (rate limiting, provider hiccups) are retried with
+# exponential backoff before we give up and surface a 503. Free-tier Mistral
+# keys frequently return 429, so this makes enhancement resilient.
+MAX_RETRIES = 3
+BACKOFF_BASE = 0.5  # seconds: waits ~0.5s, 1s, 2s between attempts
+_RETRY_STATUS = {429, 500, 502, 503, 504}
 
 # One concise system prompt per supported action. Each instructs the model to
 # return ONLY the transformed text with no preamble or commentary.
@@ -81,12 +89,29 @@ def enhance_text(text: str, action: str) -> str:
         "Content-Type": "application/json",
     }
 
-    try:
-        resp = httpx.post(API_URL, json=payload, headers=headers, timeout=TIMEOUT)
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"].strip()
-    except (httpx.HTTPError, KeyError, IndexError, ValueError) as exc:
-        raise AIServiceUnavailable(str(exc)) from exc
-    except Exception as exc:  # unexpected provider failure
-        raise AIServiceUnavailable(str(exc)) from exc
+    last_exc: Exception | None = None
+    for attempt in range(MAX_RETRIES):
+        try:
+            resp = httpx.post(
+                API_URL, json=payload, headers=headers, timeout=TIMEOUT
+            )
+            # raise_for_status turns 4xx/5xx into HTTPStatusError; the handler
+            # below decides whether the status is worth retrying.
+            resp.raise_for_status()
+            data = resp.json()
+            return data["choices"][0]["message"]["content"].strip()
+        except httpx.HTTPStatusError as exc:
+            last_exc = exc
+            if exc.response.status_code not in _RETRY_STATUS:
+                raise AIServiceUnavailable(str(exc)) from exc
+        except (httpx.TransportError, KeyError, IndexError, ValueError) as exc:
+            # Network/timeout errors and malformed responses are transient.
+            last_exc = exc
+        except Exception as exc:  # unexpected provider failure — don't retry
+            raise AIServiceUnavailable(str(exc)) from exc
+
+        # Back off before the next attempt (skip the wait after the last try).
+        if attempt < MAX_RETRIES - 1:
+            time.sleep(BACKOFF_BASE * (2**attempt))
+
+    raise AIServiceUnavailable(str(last_exc))

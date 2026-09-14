@@ -20,8 +20,15 @@ class Settings(BaseSettings):
     # CORS: comma-separated origins allowed to call the API
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
-    # AI text enhancement (POST /api/enhance) — Mistral
+    # AI text enhancement (POST /api/enhance) + neural TTS (Voxtral) — Mistral
     mistral_api_key: str | None = None
+    # Neural TTS model (Mistral Voxtral). Uses the same MISTRAL_API_KEY.
+    voxtral_model: str = "voxtral-mini-tts-2603"
+
+    @property
+    def neural_tts_available(self) -> bool:
+        """Voxtral is offered only when a Mistral key is configured."""
+        return bool(self.mistral_api_key)
 
     # Supabase (auth + cloud history); backend-only service key
     supabase_url: str | None = None
