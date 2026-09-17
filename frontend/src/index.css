@@ -7,39 +7,47 @@
     -webkit-font-smoothing: antialiased;
   }
   body {
-    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+    @apply bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100;
   }
 }
 
 @layer components {
+  /* Sharp-cornered surface. Flat white / near-black by theme. */
   .card {
-    @apply rounded-2xl border border-slate-200 bg-white/80 shadow-sm backdrop-blur
-           dark:border-slate-800 dark:bg-slate-900/70;
+    @apply rounded-none border border-neutral-200 bg-white shadow-sm
+           dark:border-neutral-800 dark:bg-neutral-900;
   }
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2
+    @apply inline-flex items-center justify-center gap-2 rounded-none px-4 py-2
            text-sm font-semibold transition focus:outline-none focus:ring-2
            focus:ring-brand-500/50 disabled:cursor-not-allowed disabled:opacity-50;
   }
+  /* Violet — primary brand actions. */
   .btn-primary {
-    @apply btn bg-gradient-to-r from-brand-600 to-indigo-500 text-white
-           shadow-lg shadow-brand-600/20 hover:from-brand-700 hover:to-indigo-600;
+    @apply btn bg-brand-600 text-white shadow-sm hover:bg-brand-700
+           focus:ring-brand-500/50;
+  }
+  /* Green — the main Generate / success action. */
+  .btn-action {
+    @apply btn bg-action-600 text-white shadow-sm hover:bg-action-700
+           focus:ring-action-500/50;
   }
   .btn-ghost {
-    @apply btn border border-slate-200 bg-white text-slate-700 hover:bg-slate-100
-           dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200
-           dark:hover:bg-slate-700;
+    @apply btn border border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100
+           dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200
+           dark:hover:bg-neutral-700;
   }
   .select {
-    @apply w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 py-2.5
-           text-sm font-medium text-slate-800 shadow-sm transition
+    @apply w-full appearance-none rounded-none border border-neutral-300 bg-white px-3 py-2.5
+           text-sm font-medium text-neutral-800 shadow-sm transition
            focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40
-           dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100;
+           dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100;
   }
+  /* Yellow accent chip. */
   .chip {
-    @apply inline-flex items-center gap-1 rounded-full border border-slate-200
-           bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600
-           dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300;
+    @apply inline-flex items-center gap-1 rounded-none border border-accent-300
+           bg-accent-100 px-2.5 py-1 text-xs font-medium text-accent-800
+           dark:border-accent-700/60 dark:bg-accent-900/30 dark:text-accent-200;
   }
 }
 
@@ -62,9 +70,9 @@
 
 /* Range slider styling */
 input[type="range"] {
-  @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-200 dark:bg-slate-700;
+  @apply h-1.5 w-full cursor-pointer appearance-none rounded-none bg-neutral-200 dark:bg-neutral-700;
 }
 input[type="range"]::-webkit-slider-thumb {
-  @apply h-3.5 w-3.5 appearance-none rounded-full bg-brand-600 shadow;
+  @apply h-3.5 w-3.5 appearance-none rounded-none bg-brand-600 shadow;
   -webkit-appearance: none;
 }
