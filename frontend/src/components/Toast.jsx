@@ -20,7 +20,7 @@ export default function Toast({ toast, onClose }) {
       aria-live="assertive"
     >
       <div
-        className={`flex max-w-sm items-start gap-3 rounded-xl border p-4 shadow-xl backdrop-blur ${
+        className={`flex max-w-sm items-start gap-3 rounded-none border p-4 shadow-xl backdrop-blur ${
           error
             ? "border-red-200 bg-red-50/95 text-red-800 dark:border-red-500/30 dark:bg-red-950/80 dark:text-red-200"
             : "border-emerald-200 bg-emerald-50/95 text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-950/80 dark:text-emerald-200"

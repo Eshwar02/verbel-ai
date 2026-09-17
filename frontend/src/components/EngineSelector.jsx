@@ -23,7 +23,7 @@ export default function EngineSelector({ value, onChange }) {
       <div
         role="radiogroup"
         aria-label="TTS engine"
-        className="grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800/60"
+        className="grid grid-cols-2 gap-2 rounded-none bg-neutral-100 p-1 dark:bg-neutral-800/60"
       >
         {OPTIONS.map(({ id, label, hint, icon: Icon }) => {
           const active = value === id;
@@ -34,10 +34,10 @@ export default function EngineSelector({ value, onChange }) {
               role="radio"
               aria-checked={active}
               onClick={() => onChange(id)}
-              className={`flex flex-col items-start rounded-lg px-3 py-2 text-left transition ${
+              className={`flex flex-col items-start rounded-none px-3 py-2 text-left transition ${
                 active
-                  ? "bg-white shadow-sm ring-1 ring-brand-500/30 dark:bg-slate-900"
-                  : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                  ? "bg-white shadow-sm ring-1 ring-brand-500/30 dark:bg-neutral-900"
+                  : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
               }`}
             >
               <span className="flex items-center gap-1.5 text-sm font-semibold">
@@ -46,7 +46,7 @@ export default function EngineSelector({ value, onChange }) {
                 />
                 {label}
               </span>
-              <span className="text-[11px] text-slate-400">{hint}</span>
+              <span className="text-[11px] text-neutral-400">{hint}</span>
             </button>
           );
         })}

@@ -23,7 +23,7 @@ export default function History({ items, onReplay, onClear, onSetTags, onDelete 
 
   if (!items.length) {
     return (
-      <div className="card p-5 text-center text-sm text-slate-400">
+      <div className="card p-5 text-center text-sm text-neutral-400">
         <HistoryIcon className="mx-auto mb-2 h-5 w-5" />
         No generations yet.
       </div>
@@ -58,7 +58,7 @@ export default function History({ items, onReplay, onClear, onSetTags, onDelete 
 
       {/* search */}
       <div className="relative mb-3">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -tranneutral-y-1/2 opacity-50" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -69,25 +69,25 @@ export default function History({ items, onReplay, onClear, onSetTags, onDelete 
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-4 text-center text-sm text-slate-400">No matches.</p>
+        <p className="py-4 text-center text-sm text-neutral-400">No matches.</p>
       ) : (
         <ul className="space-y-2">
           {filtered.map((item) => (
             <li
               key={item.id}
-              className="rounded-xl border border-slate-100 bg-slate-50/60 p-2.5 dark:border-slate-800 dark:bg-slate-800/40"
+              className="rounded-none border border-neutral-100 bg-neutral-50/60 p-2.5 dark:border-neutral-800 dark:bg-neutral-800/40"
             >
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => onReplay(item)}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-600/10 text-brand-600 hover:bg-brand-600/20 dark:text-brand-300"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-brand-600/10 text-brand-600 hover:bg-brand-600/20 dark:text-brand-300"
                   aria-label="Replay"
                 >
                   <Play className="h-4 w-4 pl-0.5" />
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{item.textPreview}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400">
                     {item.languageName} · {item.voiceLabel}
                   </p>
                 </div>
@@ -125,7 +125,7 @@ export default function History({ items, onReplay, onClear, onSetTags, onDelete 
                     }
                     onKeyDown={(e) => e.key === "Enter" && addTag(item.id)}
                     placeholder="tag"
-                    className="w-16 rounded-full border border-dashed border-slate-300 bg-transparent px-2 py-0.5 text-xs focus:border-brand-500 focus:outline-none dark:border-slate-600"
+                    className="w-16 rounded-none border border-dashed border-neutral-300 bg-transparent px-2 py-0.5 text-xs focus:border-brand-500 focus:outline-none dark:border-neutral-600"
                     aria-label="Add tag"
                   />
                   <button

@@ -99,7 +99,7 @@ export default function AudioPlayer({ src, downloadName }) {
       <div className="flex items-center gap-3">
         <button
           onClick={toggle}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-indigo-500 text-white shadow-lg shadow-brand-600/30"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-none bg-brand-600 text-white shadow-lg shadow-brand-600/20"
           aria-label={playing ? "Pause" : "Play"}
         >
           {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5 pl-0.5" />}
@@ -114,7 +114,7 @@ export default function AudioPlayer({ src, downloadName }) {
             value={current}
             onChange={(e) => seek(Number(e.target.value))}
           />
-          <div className="mt-1 flex justify-between text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <div className="mt-1 flex justify-between text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
             <span>{fmt(current)}</span>
             <span>{fmt(duration)}</span>
           </div>
@@ -123,7 +123,7 @@ export default function AudioPlayer({ src, downloadName }) {
 
       <div className="mt-4 flex items-center gap-4">
         <div className="flex flex-1 items-center gap-2">
-          <Volume2 className="h-4 w-4 text-slate-400" />
+          <Volume2 className="h-4 w-4 text-neutral-400" />
           <input
             type="range"
             min={0}

@@ -101,7 +101,7 @@ export default function TextInput({ value, onChange, maxLength }) {
           setDragging(false);
           readFile(e.dataTransfer.files?.[0]);
         }}
-        className={`relative rounded-xl border-2 border-dashed transition ${
+        className={`relative rounded-none border-2 border-dashed transition ${
           dragging
             ? "border-brand-500 bg-brand-50/50 dark:bg-brand-500/10"
             : "border-transparent"
@@ -113,9 +113,9 @@ export default function TextInput({ value, onChange, maxLength }) {
           onChange={(e) => onChange(e.target.value)}
           rows={8}
           placeholder="Enter or paste text here… (or drop a .txt file)"
-          className="w-full resize-y rounded-xl border border-slate-200 bg-white/60 p-4 text-sm leading-relaxed
+          className="w-full resize-y rounded-none border border-neutral-200 bg-white/60 p-4 text-sm leading-relaxed
                      shadow-inner focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40
-                     dark:border-slate-700 dark:bg-slate-800/60"
+                     dark:border-neutral-700 dark:bg-neutral-800/60"
         />
       </div>
 
@@ -135,10 +135,10 @@ export default function TextInput({ value, onChange, maxLength }) {
         </span>
         <span className="chip">~{readTime} read</span>
         <div className="ml-auto flex-1 basis-full sm:basis-40">
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+          <div className="h-1.5 w-full overflow-hidden rounded-none bg-neutral-200 dark:bg-neutral-700">
             <div
-              className={`h-full rounded-full transition-all ${
-                over ? "bg-red-500" : "bg-gradient-to-r from-brand-500 to-indigo-500"
+              className={`h-full rounded-none transition-all ${
+                over ? "bg-red-500" : "bg-brand-500"
               }`}
               style={{ width: `${pct}%` }}
             />

@@ -5,7 +5,7 @@ export default function GenerateButton({ onClick, loading, disabled }) {
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className="btn-primary w-full py-3 text-base"
+      className="btn-action w-full py-3 text-base"
     >
       {loading ? (
         <>

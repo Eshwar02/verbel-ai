@@ -63,7 +63,7 @@ export default function AuthModal({ open, onClose, onAuthed, onError }) {
           <label className="block">
             <span className="mb-1 block text-sm font-medium opacity-80">Email</span>
             <div className="relative">
-              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
+              <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -tranneutral-y-1/2 opacity-50" />
               <input
                 type="email"
                 required
@@ -79,7 +79,7 @@ export default function AuthModal({ open, onClose, onAuthed, onError }) {
           <label className="block">
             <span className="mb-1 block text-sm font-medium opacity-80">Password</span>
             <div className="relative">
-              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 opacity-50" />
+              <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -tranneutral-y-1/2 opacity-50" />
               <input
                 type="password"
                 required
