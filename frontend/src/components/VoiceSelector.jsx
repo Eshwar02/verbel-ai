@@ -1,5 +1,9 @@
 import { useRef, useState } from "react";
 import { Mic, Star, Play, Loader2 } from "lucide-react";
+import LottiePlayer from "./LottiePlayer.jsx";
+import { equalizer } from "../assets/lottie/equalizer.js";
+
+const WAVE_ANIM = equalizer({ color: "#7c3aed", bars: 5, w: 60, h: 24 });
 
 export default function VoiceSelector({
   voices,
@@ -42,6 +46,11 @@ export default function VoiceSelector({
     <div>
       <label className="mb-1.5 flex items-center gap-1.5 text-sm font-semibold">
         <Mic className="h-4 w-4 text-brand-500" /> Voice
+        <LottiePlayer
+          animationData={WAVE_ANIM}
+          className="ml-1 h-5 w-12"
+          ariaLabel="Voice soundwave"
+        />
       </label>
       <div className="flex items-center gap-2">
         <select
