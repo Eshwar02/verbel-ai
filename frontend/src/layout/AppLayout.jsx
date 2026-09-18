@@ -7,9 +7,9 @@ import { useApp } from "../context/AppContext.jsx";
 export default function AppLayout() {
   const { toast, setToast } = useApp();
   return (
-    <div className="flex min-h-screen bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
+    <div className="flex h-screen overflow-hidden bg-white text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">
       <Sidebar />
-      <main className="min-w-0 flex-1 overflow-x-hidden">
+      <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-8">
           <Outlet />
         </div>
