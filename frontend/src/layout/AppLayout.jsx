@@ -12,6 +12,9 @@ export default function AppLayout() {
       <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-8">
           <Outlet />
+          <footer className="mt-10 text-center text-xs font-medium text-neutral-400">
+            made by eshwar · made with <span className="text-red-500">❤️</span>
+          </footer>
         </div>
       </main>
       <Toast toast={toast} onClose={() => setToast(null)} />
