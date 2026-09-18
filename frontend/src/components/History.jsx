@@ -1,9 +1,26 @@
-import { useMemo, useState } from "react";
-import { History as HistoryIcon, Play, Trash2, Search, X, Plus, Tag } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { History as HistoryIcon, Play, Pause, Trash2, Search, X, Plus, Tag } from "lucide-react";
 
 export default function History({ items, onReplay, onClear, onSetTags, onDelete }) {
   const [query, setQuery] = useState("");
   const [tagDraft, setTagDraft] = useState({}); // id -> in-progress tag text
+  const [playingId, setPlayingId] = useState(null);
+  const audioRef = useRef(null);
+
+  // Play the clip inline; a second click on the same item pauses it.
+  const togglePlay = (item) => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (playingId === item.id) {
+      a.pause();
+      setPlayingId(null);
+      return;
+    }
+    a.src = item.url;
+    a.play().catch(() => setPlayingId(null));
+    setPlayingId(item.id);
+    onReplay?.(item); // keep Studio in sync (loads text/voice for re-generation)
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -46,6 +63,8 @@ export default function History({ items, onReplay, onClear, onSetTags, onDelete 
 
   return (
     <div className="card animate-fade-in p-5">
+      {/* one shared element plays whichever clip is active */}
+      <audio ref={audioRef} onEnded={() => setPlayingId(null)} className="hidden" />
       <div className="mb-3 flex items-center justify-between">
         <h3 className="flex items-center gap-1.5 text-sm font-semibold">
           <HistoryIcon className="h-4 w-4 text-brand-500" /> Recent
@@ -79,11 +98,15 @@ export default function History({ items, onReplay, onClear, onSetTags, onDelete 
             >
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => onReplay(item)}
+                  onClick={() => togglePlay(item)}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-brand-600/10 text-brand-600 hover:bg-brand-600/20 dark:text-brand-300"
-                  aria-label="Replay"
+                  aria-label={playingId === item.id ? "Pause" : "Play"}
                 >
-                  <Play className="h-4 w-4 pl-0.5" />
+                  {playingId === item.id ? (
+                    <Pause className="h-4 w-4" />
+                  ) : (
+                    <Play className="h-4 w-4 pl-0.5" />
+                  )}
                 </button>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{item.textPreview}</p>
